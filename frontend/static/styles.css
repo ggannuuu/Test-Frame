@@ -52,6 +52,17 @@ button.green {
     background-color: #4CAF50;
 }
 
+button.selected {
+    background-color: blue;
+    color: white;
+}
+
+button.warn {
+    background-color: red;
+    color: white;
+}
+
+
 button:disabled {
     background-color: #ccc;
     cursor: not-allowed;

@@ -12,17 +12,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Validate input form on page 2
+let selectedMode = null;
+
+function selectMode(mode) {
+    selectedMode = mode;
+
+    const tensileModeBtn = document.getElementById("tensileModeBtn");
+    const scannerModeBtn = document.getElementById("scannerModeBtn");
+
+    tensileModeBtn.classList.remove("selected");
+    scannerModeBtn.classList.remove("selected");
+
+    if (selectedMode == 'tensile') {
+        tensileModeBtn.classList.add("selected");
+    } else if (selectedMode == 'scanner') {
+        scannerModeBtn.classList.add("selected");
+    }
+}
+
 function validateInput() {
-    const name = document.getElementById('name').value;
+    // const name = document.getElementById('name').value;
     const width = document.getElementById('width').value;
     const thinkness = document.getElementById('thinkness').value;
     const length = document.getElementById('length').value;
 
-    if (name && width && length && thinkness) {
+
+
+    if (width && length && thinkness && selectedMode) {
         goToPage(3);
+    } else if (!selectedMode) {
+        alert("Please select the experiment mode.");
     } else {
         alert("Please fill out all the fields.");
     }
+
 }
 
 function fillBlanks() {
@@ -48,12 +71,35 @@ function fillBlanks() {
 
 //Page 3 Calibration
 
-function moveCW() {
-    const button = document.getElementById('adjustCWBtn')
-}
 
-function moveCCW() {
-    const button = document.getElementById('adjustCCWBtn')
+
+function initialPosition(adjType) {
+    selectedAjd = adjType;
+    fetch('/initial_adjust',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({adjType: adjType})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);  // Log the response from Flask
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+
+
+    // if (selectedAjd == 'coarseCCW') {
+    //     console.log("CoarseCCW");
+    // } else if (selectedAjd == 'fineCCW') {
+    //     console.log("FineCCW");
+    // } else if (selectedAjd == 'fineCW') {
+    //     console.log("FineCW");
+    // } else if (selectedAjd == 'coarseCW') {
+    //     console.log("CoarseCW");
+    // }
 }
 
 function calibrate() {
