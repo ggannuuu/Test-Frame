@@ -80,14 +80,6 @@ The UI is designed for simplicity and clarity, ensuring first-time users can nav
 
 ---
 
-## Key Benefits
-- **Real-Time Performance:** Ensures low latency for data visualization and control.
-- **User-Friendly Design:** Intuitive interface for seamless operation.
-- **Versatile Modes:** Supports various experimental needs with flexible operation modes.
-- **Comprehensive Data Handling:** Offers both visual and detailed data outputs for thorough analysis.
-
----
-
 ## Getting Started
 1. Install required software: Python (with PyQt5), Arduino IDE.
 2. Load the Arduino control code onto the Arduino board.
