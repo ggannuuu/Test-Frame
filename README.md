@@ -93,11 +93,8 @@ The UI is designed for simplicity and clarity, ensuring first-time users can nav
 2. Load the Arduino control code onto the Arduino board.
 3. Run the front-end and back-end Python scripts.
 4. Use the UI to input material details, select mode, and start experiments.
+5. Wait for a couple minutes for the initial calibration
 
-For more details, refer to the user manual provided with the software.
+
 
 ---
-
-## Support
-If you encounter any issues or have suggestions, please contact the development team at [support@example.com](mailto:support@example.com).
-
