@@ -4,7 +4,7 @@ from tkinter import messagebox
 class ExperimentApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Experiment Software")
+        self.root.title("Test Frame Software")
         self.pages = {}
 
         # Initialize each page
@@ -36,7 +36,7 @@ class ExperimentApp:
         tk.Label(page, text="Enter Experiment Details", font=("Arial", 18)).pack(pady=10)
 
         tk.Label(page, text="Specimen Type:").pack(anchor="w")
-        self.specimen_var = tk.StringVar()
+        self.specimen_var = tk.StringVar(value = "Select the Specimen Type")
         tk.OptionMenu(page, self.specimen_var, "ASTM D638 Type IV", "ASTM D638 Type V", "Other").pack(anchor="w")
 
         tk.Label(page, text="Width (mm):").pack(anchor="w")

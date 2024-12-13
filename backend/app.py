@@ -13,12 +13,12 @@ for port in ports:
 
 # Attempt to connect to the Arduino on COM7
 try:
-    arduino = serial.Serial('COM7', 9600, timeout=1, writeTimeout=2)  # Use COM7 as identified
+    arduino = serial.Serial('COM8', 115200, timeout=1, writeTimeout=2)  # Use COM7 as identified
     time.sleep(2)  # Wait for the connection to establish
     if arduino.is_open:
-        print("Successfully connected to Arduino on COM7.")
+        print("Successfully connected to Arduino on COM8.")
 except serial.SerialException as e:
-    print(f"Error: Could not connect to Arduino on COM7. {e}")
+    print(f"Error: Could not connect to Arduino on COM8. {e}")
 
 def read_serial_data():
     if arduino is None:
@@ -57,26 +57,26 @@ serial_thread.start()
 # S : emergency stop
 # C : calibrate
 def setPose(val):
-    command = f'p,{val}\n'
+    command = f'p {val}\n'
     arduino.write(command.encode())
     print(f"Sent to Arduino: {command.strip()}")  # Log sent command for debugging
     #arduino.write(f'p,{val}\n'.encode())
 
     return
 def setVel(val):
-    arduino.write(f'v,{val}\n'.encode())
+    arduino.write(f'v {val}\n'.encode())
     return
 def setPoseMode():
-    arduino.write(f'P,0\n'.encode())
+    arduino.write(f'P 0\n'.encode())
     return
 def setVelMode():
-    arduino.write(f'V,0\n'.encode())
+    arduino.write(f'V 0\n'.encode())
     return
 def emergencyStop():
-    arduino.write(f'S,0\n'.encode())
+    arduino.write(f'S 0\n'.encode())
     return
 def calibrate():
-    arduino.write(f'C,0\n'.encode())
+    arduino.write(f'C 0\n'.encode())
     return
 ###Loadcell Functions
 
