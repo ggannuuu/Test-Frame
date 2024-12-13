@@ -8,12 +8,13 @@ class Backend:
         self.force = 0.0
         self.time = 0.0
         self.displacement = 0.0
-        self.serial_port1 = "COM9"
-        self.serial_port2 = "COM10"
+        self.serial_port1 = "COM8"
+        self.serial_port2 = "COM9"
         self.baudrate = 9600
         self.connection1 = None
         self.connection2 = None
         self.start_time = time.time()
+        self.update_time = self.start_time
 
         # material variable
         self.material_name = ""
@@ -38,11 +39,13 @@ class Backend:
         """Initialize the serial connection."""
         try:
             self.connection1 = serial.Serial(self.serial_port1, self.baudrate, timeout=1)
-            #self.connection2 = serial.Serial(self.serial_port2, self.baudrate, timeout=1)
+            self.connection2 = serial.Serial(self.serial_port2, self.baudrate, timeout=1)
             print(f"Connected to {self.serial_port1} at {self.baudrate} baud.")
-            #print(f"Connected to {self.serial_port2} at {self.baudrate} baud.")
+            print(f"Connected to {self.serial_port2} at {self.baudrate} baud.")
+            time.sleep(2)
         except serial.SerialException as e:
             print(f"Error: Could not connect to serial port: {e}")
+            time.sleep(2)
             sys.exit(1)
 
     def update_force(self):
@@ -50,68 +53,78 @@ class Backend:
         if self.connection1 and self.connection1.in_waiting > 0:
             try:
                 line = self.connection1.readline().decode('utf-8').strip()
-                print(f"Raw line from serial: {line}")  # Debugging raw data
+                #print(f"Raw line from Force serial: {line}")  # Debugging raw data
 
                 if line.startswith("Load_Cell:"):
                     self.force = float(line.split(":")[1].strip())
                     self.time = time.time() - self.start_time  # Update elapsed time
-                    print(f"Parsed force: {self.force}")  # Debugging parsed force value
+                    #print(f"Parsed force: {self.force}")  # Debugging parsed force value
                 else:
                     print("Unrecognized data format.")
             except ValueError:
                 print("Error: Failed to parse force value.")
         else:
-            print("No data available from serial port.")
+            print("No data available from serial port (FORCE).")
 
 
-    # def update_position(self):
+    def update_position(self):
+        if self.connection2:
+            print(f"Bytes in buffer: {self.connection2.in_waiting}")  # Debugging: Check if data exists
+            if self.connection2.in_waiting > 0:
+                try:
+                    line = self.connection2.readline().decode('utf-8').strip()
+                    print(f"Received line: {line}")  # Debugging raw data
 
-    #     if self.connection2 and self.connection2.in_waiting > 0:
-    #         try:
-    #             line = self.connection2.readline().decode('utf-8').strip()
-    #             print(f"Raw line from serial: {line}")  
+                    if line.startswith("POS:"):
+                        self.displacement = float(line.split(":")[1].strip())
+                        print(f"Parsed displacement: {self.displacement}")  # Debugging parsed value
+                    elif line.startswith("LOG:"):
+                        log_line = line.split(":")[1].strip()
+                        print(f"Log message: {log_line}")
+                    else:
+                        print("Unrecognized data format.")
+                except ValueError:
+                    print("Error: Failed to parse displacement value.")
+            else:
+                print("No data available from serial port (POS).")
+        else:
+            print("Serial connection not established.")
 
-    #             if line.startswith("POS:"):
-    #                 self.displacement = float(line.split(":")[1].strip())
-    #                 print(f"Parsed displacement: {self.displacement}")  
-    #             elif line.startswith("LOG:"):
-    #                 log_line = float(line.split(":")[1].strip())
-    #                 print(f"Log message: {log_line}")
-    #             else:
-    #                 print("Unrecognized data format.")
-    #         except ValueError:
-    #             print("Error: Failed to parse displacement value.")
-    #     else:
-    #         print("No data available from serial port.")
 
 
     def motor_setPos(self, val):
-        self.connection2.write(f'P {val}\n'.encode())
+        command = f"#P:{val}\n"
+        print(f"Sending command: {command}")
+        self.connection2.write(command.encode())
 
     def motor_setVel(self, val):
-        self.connection2.write(f'V {val}\n'.encode())
+        command = f"#V:{val}\n"
+        print(f"Sending command: {command}")
+        self.connection2.write(command.encode())
+
+
 
     def motor_stop(self):
-        self.connection2.write(f'S 0\n'.encode())
+        command = f"#S:0\n"
+        print(f"Sending command: {command}")
+        self.connection2.write(command.encode())
 
     def motor_calibration(self):
-        self.connection2.write(f'C 0\n'.encode())
-        self.motor_initial_pos = 0
+        command = f"#C:0\n"
+        print(f"Sending command: {command}")
+        self.connection2.write(command.encode())
 
 
     def execute_experiment(self, dir):
-        self.motor_stop()
-        sign = 1
-        if (dir == "right"):
-            sign = -1
+        
+        sign = 1 if dir == "right" else -1
 
         if (self.mode == "continuous"):
             self.motor_setVel(sign * self.elongation_rate)
         elif (self.mode == "manual"):
             self.motor_setPos(sign * self.step_size)
         elif (self.mode == "timer"):
-            
-            while(True):
+            for _ in range(100):  
                 self.motor_setPos(sign * self.step_size)
                 time.sleep(self.time_interval)
 
@@ -150,8 +163,8 @@ class Backend:
         return self.force*9.81, self.displacement
     
     def get_data(self):
-        #self.update_position()
-        self.displacement += 0.1
-        self.update_force()
-        self.time = time.time() - self.start_time
-        return self.time, self.force*9.81, self.displacement
+        if time.time() - self.update_time > 0.2:
+            self.update_position()
+            self.update_force()
+            self.update_time = time.time()
+        return self.time, self.force * 9.81, self.displacement

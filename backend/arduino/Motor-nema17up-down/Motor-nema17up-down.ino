@@ -7,20 +7,17 @@
 
 // Create an AccelStepper object in DRIVER mode (for A4988)
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
-//max step = stepsPerRevolution * revolutionToMove * 7
 
 const int stepsPerRevolution = 200;  // Number of steps per revolution for the stepper motor
-const int revolutionsToMove = 100;     // Number of revolutions you want to move
-long targetPosition;                 // Target position in steps
+const int revolutionsToMove = 100;  // Number of revolutions you want to move
+const long max_height = stepsPerRevolution * revolutionsToMove * 7;
+
 const int lowSpeed = 2000;
 const int highSpeed = 3500;
 long currPos;
 
-const long max_height = stepsPerRevolution * revolutionsToMove * 7;
-
 void setup() {
-  Serial.begin(9600); // For debugging (optional)
-
+  Serial.begin(9600); // Initialize serial communication
 
   // Initialize limit switch pins
   pinMode(LIMIT_SWITCH_1, INPUT);
@@ -33,46 +30,63 @@ void setup() {
   stepper.setMaxSpeed(3600);    // Set max speed in steps per second
   stepper.setAcceleration(1500); // Set acceleration in steps per second^2
 
-  calibrate();
+  if (digitalRead(LIMIT_SWITCH_1) == HIGH) {
+    escapeLimitSwitch();
+  }
 
+  calibrate();
+  moveToDefaultPosition(); // Move to default position after calibration
 }
 
 void loop() {
-  if(Serial.available() > 0) {
-    char command = Serial.read();
-    long val = Serial.parseInt();
-    if (command == 'P') {
-      Serial.println("LOG:Setting Position");
-      setPos(val);
-    } else if (command == 'V') {
-      Serial.println("LOG:Setting Velocity");
-      setVel(val);
-    } else if (command == 'S') {
-      Serial.println("LOG:Emergency Stop");
-      stop();
-    } else if (command == 'C') {
-      Serial.println("LOG:Calibration");
-      calibrate();
-    }
+  if (Serial.available() > 0) {
+    String inputString = Serial.readStringUntil('\n'); // Read until newline
+    inputString.trim(); // Remove any leading/trailing spaces
+    processCommand(inputString);
   }
 
+  stepper.run();
 
-    // Check if limit switch 1 is pressed (HIGH)
+  // Periodically send the current position
+  static unsigned long lastReport = 0;
+  if (millis() - lastReport > 500) { // Every 500ms
+    currPos = getPos();
+    Serial.println("POS:" + String(currPos));
+    lastReport = millis();
+  }
 
-  currPos = getPos();
-  Serial.println("POS:" + String(currPos));
+  // Check if position is out of bounds
 
-  if (currPos <= 0 || currPos > max_height) {
+}
+
+void processCommand(String command) {
+  if (command.startsWith("#P:")) {
+    long val = command.substring(3).toInt();
+    Serial.println("LOG:Move command received");
+    setPos(val);
+  } else if (command.startsWith("#V:")) {
+    long val = command.substring(3).toInt();
+    Serial.println("LOG:Velocity command received");
+    setVel(val);
+  } else if (command.startsWith("#S")) {
+    Serial.println("LOG:Emergency Stop");
+    stop();
+  } else if (command.startsWith("#C")) {
+    Serial.println("LOG:Calibration");
+    calibrate();
+    moveToDefaultPosition();
+  } else {
+    Serial.println("LOG:Invalid command");
+  }
+}
+
+void setPos(long val) {
+  stepper.moveTo(currPos + val);
+  Serial.println("LOG:setPos Completed");
+  if (currPos + val < 0 || currPos + val > max_height) {
     Serial.println("LOG:Reached Min/Max Pos");
     stop();
   }
-  delay(200);
-}
-
-
-void setPos(long val) {
-  stepper.move(val);
-  Serial.println("LOG:setPos Completed");
 }
 
 void setVel(long val) {
@@ -90,13 +104,27 @@ long getPos() {
 }
 
 void calibrate() {
-  stepper.setSpeed(-1*lowSpeed);
-  if (digitalRead(LIMIT_SWITCH_1) == HIGH) {
-    stepper.stop();
-    Serial.println("LOG:Calibration Completed");
-    stepper.setCurrentPosition(0);
+  stepper.setSpeed(-1 * highSpeed);
+  while (digitalRead(LIMIT_SWITCH_1) != HIGH) {
+    stepper.runSpeed();
   }
 
+  stepper.stop();
+  stepper.setCurrentPosition(0);
+  Serial.println("LOG:Calibration Completed");
 }
 
+void moveToDefaultPosition() {
+  stepper.moveTo(1000);
+  Serial.println("LOG:Moved to default position (1000)");
+}
 
+void escapeLimitSwitch() {
+  Serial.println("LOG:Escaping limit switch");
+  stepper.setSpeed(highSpeed); // Move in the opposite direction
+  for (int i = 0; i < 200; i++) { // Move a small number of steps away from the switch
+    stepper.runSpeed();
+  }
+  stepper.stop();
+  Serial.println("LOG:Escaped limit switch");
+}

@@ -12,15 +12,14 @@ class RealTimePlot(QWidget):
         self.ax = self.figure.add_subplot(111)
 
         # Initial Plot Settings
-        self.ax.set_title("Real-Time Plot", fontsize = 30)
-        self.ax.set_xlabel("Time [s]", fontsize = 20)
-        self.ax.set_ylabel("Force [N]", fontsize = 20)
+        self.ax.set_title("Real-Time Plot", fontsize=30)
+        self.ax.set_xlabel("Time [s]", fontsize=20)
+        self.ax.set_ylabel("Force [N]", fontsize=20)
         self.ax.grid()
 
         # Data Storage
         self.time_data = []
         self.force_data = []
-  
 
         # Plot Lines
         self.force_line, = self.ax.plot([], [], label="Force [N]", color="red")
@@ -36,14 +35,13 @@ class RealTimePlot(QWidget):
         # Append new data
         self.time_data.append(time)
         self.force_data.append(force)
-  
 
         # Update plot data
         self.force_line.set_data(self.time_data, self.force_data)
 
-
         # Adjust plot limits dynamically
-        self.ax.set_xlim(0, max(10, time))  # Ensure at least 10 seconds visible
+        if self.time_data:
+            self.ax.set_xlim(min(self.time_data), max(self.time_data))  # Expand to fit all time data
         if self.force_data:
             min_force = min(self.force_data)
             max_force = max(self.force_data)
@@ -52,6 +50,7 @@ class RealTimePlot(QWidget):
 
         # Redraw the canvas
         self.canvas.draw()
+
 
 # class RealTimePlot(QWidget):
 #     def __init__(self, parent=None):

@@ -6,44 +6,42 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
-from real_time_plot_table import RealTimePlot, RealTimeTable
+from frontend.real_time_plot_table import RealTimePlot, RealTimeTable
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.backend_experiment import Backend
 
 import random
 
-class BackendSimulator:
-    """Simulates the backend providing force and displacement readings."""
-    def __init__(self):
-        self.force = 0.0
-        self.displacement = 0.0
-        self.time = 0
+# class BackendSimulator:
+#     """Simulates the backend providing force and displacement readings."""
+#     def __init__(self):
+#         self.force = 0.0
+#         self.displacement = 0.0
+#         self.time = 0
 
-    def get_readings(self):
-        # Simulate real-time values
-        self.force = random.uniform(0, 100)  # Random force in N
-        self.displacement = random.uniform(0, 50)  # Random displacement in mm
-        return self.force, self.displacement
+#     def get_readings(self):
+#         # Simulate real-time values
+#         self.force = random.uniform(0, 100)  # Random force in N
+#         self.displacement = random.uniform(0, 50)  # Random displacement in mm
+#         return self.force, self.displacement
     
-    def get_data(self):
-        self.time += 1  # Simulate time increment
-        self.force = random.uniform(0, 100)  # Simulate force in N
-        self.displacement = random.uniform(0, 50)  # Simulate displacement in mm
-        return self.time, self.force, self.displacement
+#     def get_data(self):
+#         self.time += 1  # Simulate time increment
+#         self.force = random.uniform(0, 100)  # Simulate force in N
+#         self.displacement = random.uniform(0, 50)  # Simulate displacement in mm
+#         return self.time, self.force, self.displacement
 
 
 
 class ExperimentApp(QMainWindow):
-    def __init__(self):
+    def __init__(self, backend):
         super().__init__()
         self.setWindowTitle("Experiment Page")
         self.setGeometry(100, 100, 1200, 800)
 
-        '''
-        Backend Simulator
-        '''
+
         self.backend = backend
-        self.backend.connect_serial()
+        
 
 
         
@@ -372,15 +370,15 @@ class ExperimentApp(QMainWindow):
         layout = QVBoxLayout(cont_widget)
 
         elongation_rate_label = QLabel("Elongation Rate [mm/s] : ")
-        elongation_rate_input = QLineEdit()
-        elongation_rate_input.setPlaceholderText("Enter")
+        self.elongation_rate_input = QLineEdit()
+        self.elongation_rate_input.setPlaceholderText("Enter")
 
         layout.addWidget(elongation_rate_label)
-        layout.addWidget(elongation_rate_input)
+        layout.addWidget(self.elongation_rate_input)
 
         self.save_continuous_mode_input_button = QPushButton("Enter")
         self.save_continuous_mode_input_button.clicked.connect(lambda: self.mode_value_enter("continuous"))
-        self.input_layout.addWidget(self.save_continuous_mode_input_button)
+        layout.addWidget(self.save_continuous_mode_input_button)
 
         self.dynamic_content.addWidget(cont_widget)
 
@@ -392,15 +390,15 @@ class ExperimentApp(QMainWindow):
         layout = QVBoxLayout(manual_widget)
 
         manual_displacement_label = QLabel("Displacement(Step Size) [mm] : ")
-        manual_displacement_input = QLineEdit()
-        manual_displacement_input.setPlaceholderText("Enter")
+        self.manual_displacement_input = QLineEdit()
+        self.manual_displacement_input.setPlaceholderText("Enter")
 
         layout.addWidget(manual_displacement_label)
-        layout.addWidget(manual_displacement_input)
+        layout.addWidget(self.manual_displacement_input)
 
         self.save_manual_mode_input_button = QPushButton("Enter")
         self.save_manual_mode_input_button.clicked.connect(lambda: self.mode_value_enter("manual"))
-        self.input_layout.addWidget(self.save_manual_mode_input_button)
+        layout.addWidget(self.save_manual_mode_input_button)
         
         self.dynamic_content.addWidget(manual_widget)
 
@@ -412,22 +410,22 @@ class ExperimentApp(QMainWindow):
         layout = QVBoxLayout(timer_widget)
 
         timer_displacement_label = QLabel("Displacement(Step Size) [mm] : ")
-        timer_displacement_input = QLineEdit()
-        timer_displacement_input.setPlaceholderText("Enter")
+        self.timer_displacement_input = QLineEdit()
+        self.timer_displacement_input.setPlaceholderText("Enter")
 
         timer_interval_label = QLabel("Time Interval [s] : ")
-        timer_interval_input = QLineEdit()
-        timer_interval_input.setPlaceholderText("Enter")
+        self.timer_interval_input = QLineEdit()
+        self.timer_interval_input.setPlaceholderText("Enter")
 
         layout.addWidget(timer_displacement_label)
-        layout.addWidget(timer_displacement_input)
+        layout.addWidget(self.timer_displacement_input)
 
         layout.addWidget(timer_interval_label)
-        layout.addWidget(timer_interval_input)
+        layout.addWidget(self.timer_interval_input)
 
         self.save_timer_mode_input_button = QPushButton("Enter")
         self.save_timer_mode_input_button.clicked.connect(lambda: self.mode_value_enter("timer"))
-        self.input_layout.addWidget(self.save_timer_mode_input_button)
+        layout.addWidget(self.save_timer_mode_input_button)
 
         self.dynamic_content.addWidget(timer_widget)
 
@@ -464,9 +462,9 @@ class ExperimentApp(QMainWindow):
         if mode == "continuous":
             print(f"Elongation Rate: {self.backend.elongation_rate}")
         elif mode == "manual":
-            print(f"Manual Displacement: {self.backend.manual_displacement}")
+            print(f"Manual Displacement: {self.backend.step_size}")
         elif mode == "timer":
-            print(f"Timer Displacement: {self.backend.timer_displacement}, Timer Interval: {self.backend.timer_interval}")
+            print(f"Timer Displacement: {self.backend.step_size}, Timer Interval: {self.backend.time_interval}")
 
     # Calibration
     # Zeros the force and displacement
@@ -565,14 +563,14 @@ class ExperimentApp(QMainWindow):
 
         
 
-if __name__ == "__main__":
-    backend = Backend()
+# if __name__ == "__main__":
+#     backend = Backend()
 
 
 
-    app = QApplication(sys.argv)
-    default_font = QFont("Arial", 14)
-    app.setFont(default_font)
-    window = ExperimentApp()
-    window.show()
-    sys.exit(app.exec_())
+#     app = QApplication(sys.argv)
+#     default_font = QFont("Arial", 14)
+#     app.setFont(default_font)
+#     window = ExperimentApp()
+#     window.show()
+#     sys.exit(app.exec_())
