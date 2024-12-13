@@ -1,12 +1,6 @@
 <h1>ME 470 TEST FRAME APPLICATION MANUAL</h1>
 
-<h5>
-This software requires the following libraries in python. Make sure to install before the usage.
-1. PyQt5
-2. panda
-3. matplotlib
-4. serial
-</h5>
+
 
 # Experiment Software
 
@@ -21,7 +15,14 @@ The software architecture consists of three components:
 2. **Back-end:** Written in Python for handling data and calculations.
 3. **Arduino Control Code:** Written in C++ using the Arduino IDE for direct hardware interaction.
 
-Real-time performance and intuitive design are prioritized to ensure ease of use for first-time users.
+
+This software requires the following libraries in python. Make sure to install before the usage.
+
+1. **PyQt5**
+2. **panda**
+3. **matplotlib**
+4. **serial**
+
 
 ---
 
