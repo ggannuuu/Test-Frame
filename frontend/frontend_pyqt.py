@@ -12,25 +12,6 @@ from backend.backend_experiment import Backend
 
 import random
 
-# class BackendSimulator:
-#     """Simulates the backend providing force and displacement readings."""
-#     def __init__(self):
-#         self.force = 0.0
-#         self.displacement = 0.0
-#         self.time = 0
-
-#     def get_readings(self):
-#         # Simulate real-time values
-#         self.force = random.uniform(0, 100)  # Random force in N
-#         self.displacement = random.uniform(0, 50)  # Random displacement in mm
-#         return self.force, self.displacement
-    
-#     def get_data(self):
-#         self.time += 1  # Simulate time increment
-#         self.force = random.uniform(0, 100)  # Simulate force in N
-#         self.displacement = random.uniform(0, 50)  # Simulate displacement in mm
-#         return self.time, self.force, self.displacement
-
 
 
 class ExperimentApp(QMainWindow):
@@ -561,6 +542,26 @@ class ExperimentApp(QMainWindow):
         self.log_console.moveCursor(self.log_console.textCursor().End)
 
 
+## To run the frontend independently
+
+# class BackendSimulator:
+#     """Simulates the backend providing force and displacement readings."""
+#     def __init__(self):
+#         self.force = 0.0
+#         self.displacement = 0.0
+#         self.time = 0
+
+#     def get_readings(self):
+#         # Simulate real-time values
+#         self.force = random.uniform(0, 100)  # Random force in N
+#         self.displacement = random.uniform(0, 50)  # Random displacement in mm
+#         return self.force, self.displacement
+    
+#     def get_data(self):
+#         self.time += 1  # Simulate time increment
+#         self.force = random.uniform(0, 100)  # Simulate force in N
+#         self.displacement = random.uniform(0, 50)  # Simulate displacement in mm
+#         return self.time, self.force, self.displacement
         
 
 # if __name__ == "__main__":
