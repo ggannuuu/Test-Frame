@@ -23,6 +23,7 @@ This software requires the following libraries in python. Make sure to install b
 3. **matplotlib**
 4. **serial**
 
+https://www.youtube.com/watch?v=66HWL49Xx-E
 
 ---
 
